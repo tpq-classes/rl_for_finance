@@ -39,8 +39,8 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
    "metadata": {},
+   "execution_count": null,
    "outputs": [],
    "source": [
     "!git clone https://github.com/tpq-classes/rl_for_finance.git\n",
@@ -88,26 +88,14 @@
    ]
   },
   {
-   "cell_type": "raw",
-   "id": "115e86c6",
-   "metadata": {
-    "auto_refactor_original_cell_type": "code",
-    "auto_refactor_role": "raw_backup"
-   },
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
    "source": [
     "from tensorflow.python.framework.ops import disable_eager_execution\n",
     "disable_eager_execution()"
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "268e9571",
-   "metadata": {
-    "auto_refactor_role": "generated"
-   },
-   "outputs": [],
-   "source": []
   },
   {
    "cell_type": "markdown",
@@ -137,12 +125,10 @@
    ]
   },
   {
-   "cell_type": "raw",
-   "id": "a746847f",
-   "metadata": {
-    "auto_refactor_original_cell_type": "code",
-    "auto_refactor_role": "raw_backup"
-   },
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
    "source": [
     "class DQLAgent:\n",
     "    def __init__(self, finish=False):\n",
@@ -225,107 +211,6 @@
     "            for _ in range(10001):\n",
     "                state = np.reshape(state, [1, self.osn])\n",
     "                action = np.argmax(self.model.predict(state))\n",
-    "                next_state, reward, done, info = env_.step(action)\n",
-    "                state = next_state\n",
-    "                if done:\n",
-    "                    treward = _ + 1\n",
-    "                    trewards.append(treward)\n",
-    "                    print('episode: {:4d}/{} | treward: {:4d}'\n",
-    "                          .format(e, episodes, treward), end='\\r')\n",
-    "                    break\n",
-    "        return trewards"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "3336b17e",
-   "metadata": {
-    "auto_refactor_role": "generated"
-   },
-   "outputs": [],
-   "source": [
-    "class DQLAgent:\n",
-    "    def __init__(self, finish=False):\n",
-    "        self.finish = finish\n",
-    "        self.epsilon = 1.0\n",
-    "        self.epsilon_min = 0.01\n",
-    "        self.epsilon_decay = 0.98\n",
-    "        self.gamma = 0.95\n",
-    "        self.batch_size = 32\n",
-    "        self.max_treward = 0\n",
-    "        self.averages = list()\n",
-    "        self.memory = deque(maxlen=2000)\n",
-    "        self.osn = env.observation_space.shape[0]\n",
-    "        self.trewards = []\n",
-    "        self.model = self._build_model()\n",
-    "        \n",
-    "    def _build_model(self):\n",
-    "        model = Sequential()\n",
-    "        model.add(Dense(24, input_dim=self.osn,\n",
-    "                        activation='relu'))\n",
-    "        model.add(Dense(24, activation='relu'))\n",
-    "        model.add(Dense(env.action_space.n, activation='linear'))\n",
-    "        model.compile(loss='mse',optimizer='adam')\n",
-    "        return model\n",
-    "        \n",
-    "    def act(self, state):\n",
-    "        if random.random() <= self.epsilon:  # exploration\n",
-    "            return env.action_space.sample()\n",
-    "        action = self.model(tf.convert_to_tensor(state, dtype=tf.float32), training=False).numpy()  # exploitation\n",
-    "        return np.argmax(action)\n",
-    "    \n",
-    "    def replay(self):\n",
-    "        batch = random.sample(self.memory, self.batch_size)\n",
-    "        for state, action, reward, next_state, done in batch:\n",
-    "            if not done:\n",
-    "                reward += self.gamma * np.amax(\n",
-    "                    self.model(tf.convert_to_tensor(next_state, dtype=tf.float32), training=False).numpy()[0])\n",
-    "            target = self.model(tf.convert_to_tensor(state, dtype=tf.float32), training=False).numpy()\n",
-    "            target[0, action] = reward\n",
-    "            self.model.fit(state, target, epochs=1,\n",
-    "                           verbose=False)\n",
-    "        if self.epsilon > self.epsilon_min:\n",
-    "            self.epsilon *= self.epsilon_decay\n",
-    "    \n",
-    "    def learn(self, episodes):\n",
-    "        for e in range(1, episodes + 1):\n",
-    "            state = env.reset()\n",
-    "            state = np.reshape(state, [1, self.osn])\n",
-    "            for _ in range(5000):\n",
-    "                action = self.act(state)\n",
-    "                next_state, reward, done, info = env.step(action)\n",
-    "                next_state = np.reshape(next_state,\n",
-    "                                        [1, self.osn])\n",
-    "                self.memory.append([state, action, reward,\n",
-    "                                     next_state, done])\n",
-    "                state = next_state\n",
-    "                if done:\n",
-    "                    treward = _ + 1\n",
-    "                    self.trewards.append(treward)\n",
-    "                    av = sum(self.trewards[-25:]) / 25\n",
-    "                    self.averages.append(av)\n",
-    "                    self.max_treward = max(self.max_treward, treward)\n",
-    "                    templ = 'episode: {:4d}/{} | treward: {:4d} | '\n",
-    "                    templ += 'av: {:5.1f} | max: {:4d}'\n",
-    "                    print(templ.format(e, episodes, treward, av,\n",
-    "                                       self.max_treward), end='\\r')\n",
-    "                    break\n",
-    "            if av > 195 and self.finish:\n",
-    "                break\n",
-    "            if len(self.memory) > self.batch_size:\n",
-    "                self.replay()\n",
-    "        print()\n",
-    "    def test(self, episodes):\n",
-    "        trewards = []\n",
-    "        for e in range(1, episodes + 1):\n",
-    "            env_ = Simul(env.symbol, env.features, env.steps, x0=env.x0,\n",
-    "                    kappa=env.kappa, theta=env.theta, sigma=env.sigma,\n",
-    "                    normalize=env.normalize, mu=env.mu, std=env.std)\n",
-    "            state = env_.reset()\n",
-    "            for _ in range(10001):\n",
-    "                state = np.reshape(state, [1, self.osn])\n",
-    "                action = np.argmax(self.model(tf.convert_to_tensor(state, dtype=tf.float32), training=False).numpy())\n",
     "                next_state, reward, done, info = env_.step(action)\n",
     "                state = next_state\n",
     "                if done:\n",
@@ -689,8 +574,8 @@
  ],
  "metadata": {
   "kernelspec": {
-   "display_name": "Python 3",
-   "name": "python3"
+   "name": "python3",
+   "display_name": "Python 3"
   },
   "language_info": {
    "codemirror_mode": {

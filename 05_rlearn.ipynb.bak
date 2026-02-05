@@ -39,8 +39,8 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
    "metadata": {},
+   "execution_count": null,
    "outputs": [],
    "source": [
     "!git clone https://github.com/tpq-classes/rl_for_finance.git\n",
@@ -89,26 +89,14 @@
    ]
   },
   {
-   "cell_type": "raw",
-   "id": "7bc45012",
-   "metadata": {
-    "auto_refactor_original_cell_type": "code",
-    "auto_refactor_role": "raw_backup"
-   },
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
    "source": [
     "from tensorflow.python.framework.ops import disable_eager_execution\n",
     "disable_eager_execution()"
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "cec436d8",
-   "metadata": {
-    "auto_refactor_role": "generated"
-   },
-   "outputs": [],
-   "source": []
   },
   {
    "cell_type": "code",
@@ -146,67 +134,9 @@
    ]
   },
   {
-   "cell_type": "raw",
-   "id": "b32183db",
-   "metadata": {
-    "auto_refactor_original_cell_type": "code",
-    "auto_refactor_role": "raw_backup"
-   },
-   "source": [
-    "class NNAgent:\n",
-    "    def __init__(self):\n",
-    "        self.max = 0\n",
-    "        self.scores = list()\n",
-    "        self.memory = list()\n",
-    "        self.epsilon = 0.5\n",
-    "        self.model = self._build_model()\n",
-    "        \n",
-    "    def _build_model(self):\n",
-    "        model = Sequential()\n",
-    "        model.add(Dense(1024, input_dim=4,\n",
-    "                        activation='relu'))\n",
-    "        model.add(Dense(1, activation='sigmoid'))\n",
-    "        model.compile(loss='binary_crossentropy',\n",
-    "                      optimizer=Adam(lr=0.001))\n",
-    "        return model\n",
-    "        \n",
-    "    def act(self, state):\n",
-    "        if random.random() <= self.epsilon:\n",
-    "            return env.action_space.sample()  # exploration\n",
-    "        action = np.where(self.model.predict(\n",
-    "            state, batch_size=None, verbose=False)[0, 0] > 0.5, 1, 0)  # exploitation\n",
-    "        return action\n",
-    "                    \n",
-    "    def train_model(self, state, action):\n",
-    "        self.model.fit(state, np.array([action,]),\n",
-    "                       epochs=1, verbose=False)\n",
-    "    \n",
-    "    def learn(self, episodes):\n",
-    "        for e in range(1, episodes + 1):\n",
-    "            state, info = env.reset()\n",
-    "            for _ in range(201):\n",
-    "                state = np.reshape(state, [1, 4])\n",
-    "                action = self.act(state)\n",
-    "                next_state, reward, done, trunc, info = env.step(action)\n",
-    "                if done:\n",
-    "                    score = _ + 1\n",
-    "                    self.scores.append(score)\n",
-    "                    self.max = max(score, self.max)\n",
-    "                    print('episode: {:4d}/{} | score: {:3d} | max: {:3d}'\n",
-    "                          .format(e, episodes, score, self.max), end='\\r')\n",
-    "                    break\n",
-    "                self.train_model(state, action)\n",
-    "                self.memory.append((state, action))\n",
-    "                state = next_state"
-   ]
-  },
-  {
    "cell_type": "code",
    "execution_count": null,
-   "id": "7c716e53",
-   "metadata": {
-    "auto_refactor_role": "generated"
-   },
+   "metadata": {},
    "outputs": [],
    "source": [
     "class NNAgent:\n",
@@ -234,7 +164,7 @@
     "        return action\n",
     "                    \n",
     "    def train_model(self, state, action):\n",
-    "        self.model.fit(state, np.array([action,], verbose=0),\n",
+    "        self.model.fit(state, np.array([action,]),\n",
     "                       epochs=1, verbose=False)\n",
     "    \n",
     "    def learn(self, episodes):\n",
@@ -321,26 +251,12 @@
    ]
   },
   {
-   "cell_type": "raw",
-   "id": "4fef75c0",
-   "metadata": {
-    "auto_refactor_original_cell_type": "code",
-    "auto_refactor_role": "raw_backup"
-   },
-   "source": [
-    "accuracy_score(np.where(agent.model.predict(f) > 0.5, 1, 0), l)  # prediction accuracy"
-   ]
-  },
-  {
    "cell_type": "code",
    "execution_count": null,
-   "id": "9344d63c",
-   "metadata": {
-    "auto_refactor_role": "generated"
-   },
+   "metadata": {},
    "outputs": [],
    "source": [
-    "accuracy_score(np.where(agent.model(tf.convert_to_tensor(f, dtype=tf.float32), training=False).numpy() > 0.5, 1, 0), l)  # prediction accuracy"
+    "accuracy_score(np.where(agent.model.predict(f) > 0.5, 1, 0), l)  # prediction accuracy"
    ]
   },
   {
@@ -355,8 +271,8 @@
  ],
  "metadata": {
   "kernelspec": {
-   "display_name": "Python 3",
-   "name": "python3"
+   "name": "python3",
+   "display_name": "Python 3"
   },
   "language_info": {
    "codemirror_mode": {
