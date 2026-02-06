@@ -39,8 +39,8 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
    "metadata": {},
+   "execution_count": null,
    "outputs": [],
    "source": [
     "!git clone https://github.com/tpq-classes/rl_for_finance.git\n",
@@ -189,26 +189,14 @@
    ]
   },
   {
-   "cell_type": "raw",
-   "id": "7aa8c84b",
-   "metadata": {
-    "auto_refactor_original_cell_type": "code",
-    "auto_refactor_role": "raw_backup"
-   },
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
    "source": [
     "from tensorflow.python.framework.ops import disable_eager_execution\n",
     "disable_eager_execution()"
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "17c226f3",
-   "metadata": {
-    "auto_refactor_role": "generated"
-   },
-   "outputs": [],
-   "source": []
   },
   {
    "cell_type": "code",
@@ -263,33 +251,9 @@
    ]
   },
   {
-   "cell_type": "raw",
-   "id": "c472b0cb",
-   "metadata": {
-    "auto_refactor_original_cell_type": "code",
-    "auto_refactor_role": "raw_backup"
-   },
-   "source": [
-    "def epoch():\n",
-    "    done = False\n",
-    "    state, info = env.reset()\n",
-    "    treward = 1\n",
-    "    while not done:\n",
-    "        action = np.where(\n",
-    "            model.predict(np.atleast_2d(state),\n",
-    "                          verbose=False)[0][0] > 0.5, 1, 0)\n",
-    "        state, reward, done, trunc, _ = env.step(action)\n",
-    "        treward += reward if not done else 0\n",
-    "    return treward"
-   ]
-  },
-  {
    "cell_type": "code",
    "execution_count": null,
-   "id": "d27d3400",
-   "metadata": {
-    "auto_refactor_role": "generated"
-   },
+   "metadata": {},
    "outputs": [],
    "source": [
     "def epoch():\n",
@@ -298,7 +262,7 @@
     "    treward = 1\n",
     "    while not done:\n",
     "        action = np.where(\n",
-    "            model(tf.convert_to_tensor(np.atleast_2d(state, dtype=tf.float32), training=False).numpy(),\n",
+    "            model.predict(np.atleast_2d(state),\n",
     "                          verbose=False)[0][0] > 0.5, 1, 0)\n",
     "        state, reward, done, trunc, _ = env.step(action)\n",
     "        treward += reward if not done else 0\n",
@@ -336,8 +300,8 @@
  ],
  "metadata": {
   "kernelspec": {
-   "display_name": "Python 3",
-   "name": "python3"
+   "name": "python3",
+   "display_name": "Python 3"
   },
   "language_info": {
    "codemirror_mode": {
