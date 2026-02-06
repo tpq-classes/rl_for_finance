@@ -64,32 +64,61 @@ class TradingBot:
             optimizer=keras.optimizers.Adam(learning_rate=lr)
         )
         return model
-
+        
     def act(self, state):
-        ''' Method for taking action based on
-            a) exploration
-            b) exploitation
-        '''
         if random.random() <= self.epsilon:
             return self.learn_env.action_space.sample()
-        action = self.model.predict(state)[0, 0]
-        return np.argmax(action)
+        q = self.model(tf.convert_to_tensor(state, dtype=tf.float32), training=False)
+        return int(tf.argmax(q[0, 0]).numpy())  # keep "first time step" behavior
 
     def replay(self):
-        ''' Method to retrain the DNN model based on
-            batches of memorized experiences.
-        '''
         batch = random.sample(self.memory, self.batch_size)
-        for state, action, reward, next_state, done in batch:
-            if not done:
-                reward += self.gamma * np.amax(
-                    self.model.predict(next_state)[0, 0])
-            target = self.model.predict(state)
-            target[0, 0, action] = reward
-            self.model.fit(state, target, epochs=1,
-                           verbose=False)
+    
+        states = np.concatenate([b[0] for b in batch], axis=0).astype(np.float32)        # (B, lags, n_features)
+        actions = np.array([b[1] for b in batch], dtype=np.int32)                        # (B,)
+        rewards = np.array([b[2] for b in batch], dtype=np.float32)                      # (B,)
+        next_states = np.concatenate([b[3] for b in batch], axis=0).astype(np.float32)   # (B, lags, n_features)
+        dones = np.array([b[4] for b in batch], dtype=np.bool_)                          # (B,)
+    
+        # Q(s, :)
+        q_states = self.model(states, training=False).numpy()      # (B, lags, 2)
+        # Q(s', :)
+        q_next = self.model(next_states, training=False).numpy()   # (B, lags, 2)
+    
+        # keep original logic: use time index 0
+        max_q_next = np.max(q_next[:, 0, :], axis=1)               # (B,)
+    
+        targets = q_states.copy()
+        updated = rewards + (1.0 - dones.astype(np.float32)) * (self.gamma * max_q_next)
+        targets[np.arange(self.batch_size), 0, actions] = updated
+    
+        self.model.train_on_batch(states, targets)
+    
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
+    def validate(self, e, episodes):
+        state = self.valid_env.reset()
+        state = np.reshape(state, [1, self.valid_env.lags, self.valid_env.n_features])
+    
+        for _ in range(10000):
+            q = self.model(tf.convert_to_tensor(state, dtype=tf.float32), training=False)
+            action = int(tf.argmax(q[0, 0]).numpy())
+    
+            next_state, reward, done, info = self.valid_env.step(action)
+            state = np.reshape(next_state, [1, self.valid_env.lags, self.valid_env.n_features])
+    
+            if done:
+                treward = _ + 1
+                perf = self.valid_env.performance
+                self.vperformances.append(perf)
+                if e % 15 == 0:
+                    templ = 70 * '='
+                    templ += '\nepisode: {:2d}/{} | VALIDATION | '
+                    templ += 'treward: {:4d} | perf: {:5.3f} | eps: {:.2f}\n'
+                    templ += 70 * '='
+                    print(templ.format(e, episodes, treward, perf, self.epsilon))
+                break
 
     def learn(self, episodes):
         ''' Method to train the DQL agent.
@@ -127,32 +156,6 @@ class TradingBot:
             if len(self.memory) > self.batch_size:
                 self.replay()
         print()
-
-    def validate(self, e, episodes):
-        ''' Method to validate the performance of the
-            DQL agent.
-        '''
-        state = self.valid_env.reset()
-        state = np.reshape(state, [1, self.valid_env.lags,
-                                   self.valid_env.n_features])
-        for _ in range(10000):
-            action = np.argmax(self.model.predict(state)[0, 0])
-            next_state, reward, done, info = self.valid_env.step(action)
-            state = np.reshape(next_state, [1, self.valid_env.lags,
-                                            self.valid_env.n_features])
-            if done:
-                treward = _ + 1
-                perf = self.valid_env.performance
-                self.vperformances.append(perf)
-                if e % 15 == 0:
-                    templ = 70 * '='
-                    templ += '\nepisode: {:2d}/{} | VALIDATION | '
-                    templ += 'treward: {:4d} | perf: {:5.3f} | eps: {:.2f}\n'
-                    templ += 70 * '='
-                    print(templ.format(e, episodes, treward,
-                                       perf, self.epsilon))
-                break
-
 
 def plot_treward(agent):
     ''' Function to plot the total reward
