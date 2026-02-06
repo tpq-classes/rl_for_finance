@@ -91,7 +91,7 @@ class TBBacktesterRM(btr.BacktestingBaseRM):
 
             state = self.env.get_state(bar)
             action = np.argmax(self.model.predict(
-                self._reshape(state.values))[0, 0])
+                self._reshape(state.values), verbose=False)[0, 0])
             position = 1 if action == 1 else -1
             if self.position in [0, -1] and position == 1 and self.wait == 0:
                 if self.verbose:
