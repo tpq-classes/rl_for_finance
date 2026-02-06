@@ -156,7 +156,6 @@ class TradingBot:
                 self.replay()
         print()
 
-    
 def plot_treward(agent):
     ''' Function to plot the total reward
         per training eposiode.
