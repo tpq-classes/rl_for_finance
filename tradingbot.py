@@ -13,13 +13,10 @@ from pylab import plt
 from collections import deque
 import tensorflow as tf
 from tensorflow import keras
-from keras.layers import Dense, Dropout
-from keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.models import Sequential
 
-from tensorflow.python.framework.ops import disable_eager_execution
-disable_eager_execution()
-
-plt.style.use('seaborn')
+plt.style.use('seaborn-v0_8')
 
 
 def set_seeds(seed=100):
