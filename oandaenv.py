@@ -35,7 +35,7 @@ class OandaEnv:
         self.end = end
         self.granularity = granularity
         self.price = price
-        self.api = tpqoa.tpqoa('../../../data/pyalgo.cfg')  # adjust the path
+        self.api = tpqoa.tpqoa('/content/rl_for_finance/pyalgo.cfg')  # adjust the path
         self.features = features
         self.n_features = len(features)
         self.window = window
@@ -53,7 +53,7 @@ class OandaEnv:
     def _get_data(self):
         ''' Method to retrieve data from Oanda.
         '''
-        self.fn = f'../../../data/'
+        self.fn = f'/content/rl_for_finance/'
         self.fn += f'oanda_{self.symbol}_{self.start}_{self.end}_' 
         self.fn += f'{self.granularity}_{self.price}.csv'
         self.fn = self.fn.replace(' ', '_').replace('-', '_').replace(':', '_')
